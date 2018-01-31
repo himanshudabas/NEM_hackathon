@@ -1,9 +1,11 @@
+## Installing Prerequisites
 ```
 npm install
 ```
 
-In terminal
+## Starting the frontend
+```
+cd ./frontend
+live-server
+```
 
-```
-node nem-api.js
-```
