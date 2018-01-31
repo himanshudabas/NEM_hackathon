@@ -1,9 +1,9 @@
 ```
-npm install nem-sdk
+npm install
 ```
 
 In terminal
 
 ```
-node mosaicTransfer.js // this will transfer mosaic dishendra:bounty from test account dishendra to test account TestDabas.
+node nem-api.js
 ```
