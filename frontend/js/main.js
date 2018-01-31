@@ -57,7 +57,7 @@ $(document).ready(function() {
 				alert(res.message);
 			}
 		}, function(err) {
-			alert(err);
+			alert(JSON.stringify(err));
 		});
 	}
 
@@ -77,11 +77,10 @@ $(document).ready(function() {
 	// create a bounty
 	$("#submit_bounty_to_blockchain").on('click', ()=> {
 
-		$title = $("#bounty_title").val;
-		$detail = $("#bounty_details").val;
-		$amount = $("#bounty_amount").val;
+		$title = $("#bounty_title").val();
+		$detail = $("#bounty_details").val();
+		$amount = $("#bounty_amount").val();
 
-		alert($title)
 		if(($title != null || $title != "") && ($detail != null || $detail != "") && ($amount != null || $amount != "")) {
 			var msg = '{"t":"'+$title+'","d":"'+$detail+'","a":"'+$amount+'"}';
 			send(msg);
@@ -95,9 +94,9 @@ $(document).ready(function() {
 	// create an information
 	$("#submit_information_to_blockchain").on('click', ()=> {
 
-		$title = $("#information_title").val;
-		$detail = $("#information_details").val;
-		$amount = $("#information_amount").val;
+		$title = $("#information_title").val();
+		$detail = $("#information_details").val();
+		$amount = $("#information_amount").val();
 
 		if(($title != null || $title != "") && ($detail != null || $detail != "") && ($amount != null || $amount != "")) {
 			var msg = '{"t":"'+$title+'","d":"'+$detail+'","a":"'+$amount+'"}';
