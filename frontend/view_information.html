@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+<script type="text/javascript">
+  function checkLogin() {
+    var cookieData = document.cookie;
+    var priKey = cookieData.substring("privateKey=".length,cookieData.length);
+    if(priKey == null || priKey == "") {
+      window.location = "./login.html";
+    }
+  }
+</script>
+
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,7 +27,7 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
 </head>
-<body>
+<body onload="checkLogin()">
 <nav class="navbar navbar-default">
   <div class="container-fluid"> 
     <!-- Brand and toggle get grouped for better mobile display -->
@@ -99,6 +110,8 @@
 
 <!-- Include all compiled plugins (below), or include individual files as needed --> 
 <script src="js/bootstrap.js"></script>
-<script src="./js/datepicker.js"></script>
+<script src="./js/nem-sdk.js"></script>
+<script src="./js/main.js"></script>
+
 </body>
 </html>
