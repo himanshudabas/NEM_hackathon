@@ -4,6 +4,7 @@
   "dependencies": {
     "body-parser": "^1.8.1",
     "express": "^4.9.0",
-    "nem-sdk": "*"
+    "nem-sdk": "*",
+    "live-server": "*"
   }
 }

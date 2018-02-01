@@ -1,9 +1,13 @@
+## Installing Prerequisites
 ```
 npm install
 ```
 
-In terminal
+## Starting the frontend
+Front now only works in Mozilla Firefox
 
 ```
-node nem-api.js
+cd ./frontend
+live-server
 ```
+
