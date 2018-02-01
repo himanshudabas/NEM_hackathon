@@ -36,15 +36,8 @@
       <a class="navbar-brand" href="./index.html">TipHunter</a></div>
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="defaultNavbar1">
-		<ul class="nav navbar-nav navbar-right">
-        <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">User's Name <span class="caret"></span></a>
-          <ul class="dropdown-menu" role="menu">
-            <li><a href="#">All Bounties</a></li>
-            <li><a href="#">Messages</a></li>
-            <li class="divider"></li>
-            <li><a href="#">Logout</a></li>
-          </ul>
-        </li>
+		  <ul class="nav navbar-nav navbar-right">
+        <li onclick="login()" class="open"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="true">Login</a></li>
       </ul>
     </div>
     <!-- /.navbar-collapse --> 
@@ -114,6 +107,11 @@
 <script src="./js/nem-sdk.js"></script>
 <script src="./js/main.js"></script>
 <script type="text/javascript">
+
+  function login() {
+    window.location = "./login.html";
+  }
+
   var cookieData = document.cookie;
   var name = "userName="
   var ca = document.cookie.split(';');
@@ -130,7 +128,7 @@
  
     if(userName != null && userName != "") {
       var a1 = '<ul class="nav navbar-nav navbar-right"><li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">'
-    var a2 = ' <span class="caret"></span></a><ul class="dropdown-menu" role="menu"><li><a href="#">All Bounties</a></li><li><a href="#">Messages</a></li><li class="divider"></li><li><a href="#">Logout</a></li></ul></li></ul>'
+    var a2 = ' <span class="caret"></span></a><ul class="dropdown-menu" role="menu"><li><a href="#">All Bounties</a></li><li><a href="#">Messages</a></li><li class="divider"></li><li class="logout"><a>Logout</a></li></ul></li></ul>'
     var uldata = a1+userName+a2;
 
     // alert(cardTemplate

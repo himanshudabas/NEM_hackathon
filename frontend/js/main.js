@@ -20,9 +20,21 @@ $(document).ready(function() {
 	var transferTransaction = nem.model.objects.get("transferTransaction");
 
 
+	/*
+	/
+	/	Logout function
+	/
+	*/
 
+	$(".logout").on('click',()=>{
+		delete_cookie("userName");
+		delete_cookie("PrivateKey");
+		window.location = "./login.html";
+	})
 
-
+	var delete_cookie = function(name) {
+	    document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+	};
 
 
 	function send(msg) {
@@ -134,8 +146,87 @@ $(document).ready(function() {
 
 
 	/*
-	/ FETCH ALL INCOMING TRANSACTIONS of an account
 	/
+	/ FETCH ALL OUTGOING TRANSACTIONS of an account
+	/
+	*/
+
+	let allCompletedTransactions = [];
+	let allCompletedHashes = [];
+
+	read = function(address, startTrxId, successCallback, failureCallback) {
+
+	        
+
+	        // 3rd argument is the transaction hash (always empty)
+	        // 4th argument is the transaction ID to begin with 
+	        nem.com.requests.account.transactions
+	            .outgoing(endpoint, address, null, startTrxId)
+	            .then(function(response)
+	        {
+	            let transactions = response.data;
+	            allCompletedTransactions = allCompletedTransactions.concat(transactions);
+	             console.log(allTransactions.length);
+	            let lastId = startTrxId;
+	            for (let i = 0; i < allCompletedTransactions.length; i++) {
+	                let trx = transactions[i];
+	                let tid = trx.meta.id;
+
+	                lastId = tid; // parameter used for NIS request
+	            }
+
+	            if (transactions.length < 25) {
+	                // done reading all outgoing transactions for this account
+	                if (typeof successCallback == "function") {
+	                    return successCallback("success");
+	                }
+	            }
+
+	            // recursion until we read all outgoing transactions for this account.
+	            return read(address, lastId, successCallback, failureCallback);
+
+
+	        }, function(error) {
+	            console.log("NIS Error: " + JSON.stringify(error));
+	            if (typeof failureCallback == "function") {
+	                return failureCallback(error);
+	            }
+	        });
+	    }
+
+	/*
+	/
+	/	FETCH all outgoing transactions from SERVERADDRESS
+	/
+	*/
+
+	if(document.title == 'Home | TipHunter') {
+	 	read(serverAddress, null, function(success) {
+
+	 		for(let i=0; i<allCompletedTransactions.length; i++) {
+	 			msg = hex2a(allCompletedTransactions[i].transaction.message.payload);
+	 			try {
+	 				JSONmsg = JSON.parse(msg);
+	 				result = JSONmsg.r;
+	 				completedhash = JSONmsg.h;
+
+	 				allCompletedHashes[completedhash] = result;
+	 				console.log(allCompletedHashes[completedhash])
+	 			} catch(e) {
+	 				continue;
+	 			}
+	 		}
+	 	}, function(failure) {
+	 		console.log(failure);
+	 	});
+	 }
+
+
+
+
+	/*
+	/
+	/ FETCH ALL INCOMING TRANSACTIONS of an account
 	/
 	*/
 
@@ -184,7 +275,7 @@ $(document).ready(function() {
 
 	/*
 	/
-	/ FETCH ALL THE TRANSACTIONS OF THE SERVERADDRESS
+	/ FETCH ALL THE Incoming TRANSACTIONS OF THE SERVERADDRESS
 	/
 	*/
 
@@ -229,7 +320,6 @@ $(document).ready(function() {
 				var mydiv = document.getElementById("information_row");
 				var newDiv = document.createElement('div');
 			    newDiv.innerHTML = "<div>No Information Available.</div>";
-			    // alert(newDiv.innerHTML);
 
 			    mydiv.appendChild(newDiv.firstChild);
 			}
