@@ -11,7 +11,7 @@ $(document).ready(function() {
 	// create common object to store private key
 	var common = nem.model.objects.get("common");
 
-	var recipient = "TABVE6MB5FOPQBAGE5NZNJZ6744JQJL65OKPPO4H";
+	var serverAddress = "TABVE6MB5FOPQBAGE5NZNJZ6744JQJL65OKPPO4H";
 
 	// dishendra's account : TB5C7AVB2XPGMSTVDZX3GIBBQ3TXRN3GXPTUURTU
 	// himanshu's account  : TABVE6MB5FOPQBAGE5NZNJZ6744JQJL65OKPPO4H
@@ -27,8 +27,8 @@ $(document).ready(function() {
 
 	function send(msg) {
 		// Check form for errors
-		if(!priKey || !recipient) return alert('private key missing !');
-		if (!nem.model.address.isValid(nem.model.address.clean(recipient))) return alert('Invalid recipent address !');
+		if(!priKey || !serverAddress) return alert('private key missing !');
+		if (!nem.model.address.isValid(nem.model.address.clean(serverAddress))) return alert('Invalid recipent address !');
 
 		// Set the private key in common object
 		common.privateKey = priKey;
@@ -40,21 +40,21 @@ $(document).ready(function() {
 		transferTransaction.amount = nem.utils.helpers.cleanTextAmount(0);
 
 		// Recipient address must be clean (no hypens: "-")
-		transferTransaction.recipient = nem.model.address.clean(recipient);
+		transferTransaction.recipient = nem.model.address.clean(serverAddress);
 
 		// Set message
 		transferTransaction.message = msg;
 
 		// Prepare the updated transfer transaction object
 		var transactionEntity = nem.model.transactions.prepare("transferTransaction")(common, transferTransaction, nem.model.network.data.testnet.id);
-
+		
 		// Serialize transfer transaction and announce
 		nem.model.transactions.send(common, transactionEntity, endpoint).then(function(res){
 			// If code >= 2, it's an error
 			if (res.code >= 2) {
-				alert(res.message);
+				alert(res);
 			} else {
-				alert(res.message);
+				alert(res);
 			}
 		}, function(err) {
 			alert(JSON.stringify(err));
@@ -82,13 +82,25 @@ $(document).ready(function() {
 		$amount = $("#bounty_amount").val();
 
 		if(($title != null || $title != "") && ($detail != null || $detail != "") && ($amount != null || $amount != "")) {
-			var msg = '{"t":"'+$title+'","d":"'+$detail+'","a":"'+$amount+'"}';
+			var msg = '{"t":"'+$title+'","d":"'+$detail+'","a":"'+$amount+'","p":"b"}';
 			send(msg);
 
 		} else {
 			alert("please check your input data.")
 		}
-		document.location = "./bounty.html";
+
+		// var time = 0;
+		// $up = $('#countdown_bounty');
+		// var miningCountdown = setInterval(()=>{
+		// 	$up.innerHTML = "wait "+(25-time)+" seconds for the transaction to get harvested.";
+		// 	time++;
+		// },1000)
+		
+		// setTimeout(()=>{
+		// 	clearInterval(miningCountdown);
+		// 	document.location = "./index.html";
+		// },25000);
+
 	});
 
 	// create an information
@@ -99,14 +111,206 @@ $(document).ready(function() {
 		$amount = $("#information_amount").val();
 
 		if(($title != null || $title != "") && ($detail != null || $detail != "") && ($amount != null || $amount != "")) {
-			var msg = '{"t":"'+$title+'","d":"'+$detail+'","a":"'+$amount+'"}';
+			var msg = '{"t":"'+$title+'","d":"'+$detail+'","a":"'+$amount+'","p":"i"}';
 			transferTransaction.message = msg;
 			send(msg);
 
 		} else {
 			alert("please check your input data.")
 		}
-		document.location = "./information.html";
+
+		// var time = 0;
+		// $up = $('#countdown_information');
+		// var miningCountdown = setInterval(()=>{
+		// 	$up.innerHTML = "wait "+(25-time)+" seconds for the transaction to get harvested.";
+		// 	time++;
+		// },1000)
+		
+		// setTimeout(()=>{
+		// 	clearInterval(miningCountdown);
+		// 	document.location = "./index.html";
+		// },25000);
 	});
+
+
+	/*
+	/ FETCH ALL INCOMING TRANSACTIONS of an account
+	/
+	/
+	*/
+
+	let allTransactions = [];
+
+	read = function(address, startTrxId, successCallback, failureCallback) {
+
+	        
+
+	        // 3rd argument is the transaction hash (always empty)
+	        // 4th argument is the transaction ID to begin with 
+	        nem.com.requests.account.transactions
+	            .incoming(endpoint, address, null, startTrxId)
+	            .then(function(response)
+	        {
+	            let transactions = response.data;
+	            allTransactions = allTransactions.concat(transactions);
+	            // console.log(allTransactions.length);
+	            let lastId = startTrxId;
+	            for (let i = 0; i < transactions.length; i++) {
+	                let trx = transactions[i];
+	                let tid = trx.meta.id;
+
+	                lastId = tid; // parameter used for NIS request
+	            }
+
+	            if (transactions.length < 25) {
+	                // done reading all outgoing transactions for this account
+	                if (typeof successCallback == "function") {
+	                    return successCallback("success");
+	                }
+	            }
+
+	            // recursion until we read all outgoing transactions for this account.
+	            return read(address, lastId, successCallback, failureCallback);
+
+
+	        }, function(error) {
+	            console.log("NIS Error: " + JSON.stringify(error));
+	            if (typeof failureCallback == "function") {
+	                return failureCallback(error);
+	            }
+	        });
+	    }
+
+
+	/*
+	/
+	/ FETCH ALL THE TRANSACTIONS OF THE SERVERADDRESS
+	/
+	*/
+
+	if(document.title == 'Home | TipHunter') {
+		read(serverAddress, null, function(success) {
+
+			let bcount, icount;
+			bcount = icount = 0;
+			for(let i=0; i<allTransactions.length; i++) {
+				msg = hex2a(allTransactions[i].transaction.message.payload);
+				try {
+					JSONmsg = JSON.parse(msg);
+					title = JSONmsg.t;
+					detail = JSONmsg.d;
+					amount = JSONmsg.a;
+					hash = allTransactions[i].meta.hash.data;
+
+					if(JSONmsg.p == 'b') {
+						fillBounties(title, detail, amount, hash);
+						bcount++;
+					} else if(JSONmsg.p == 'i') {
+						fillInformations(title ,detail, amount, hash);
+						icount++;
+					} else {
+						continue;
+					}
+
+				} catch(e) {
+					continue;
+				}
+			}
+			if(!bcount) {
+
+				var mydiv = document.getElementById("bounty_row");
+				var newDiv = document.createElement('div');
+			    newDiv.innerHTML = "<div>No Bounty Available.</div>";
+			    // alert(newDiv.innerHTML);
+
+			    mydiv.appendChild(newDiv.firstChild);			  
+			}
+			if(!icount) {
+				var mydiv = document.getElementById("information_row");
+				var newDiv = document.createElement('div');
+			    newDiv.innerHTML = "<div>No Information Available.</div>";
+			    // alert(newDiv.innerHTML);
+
+			    mydiv.appendChild(newDiv.firstChild);
+			}
+		}, function(failure) {
+			console.log(failure);
+		});
+	}
+
+
+	/*
+	/
+	/ FUNCTION TO CONVERT HEX TO ASCII
+	/
+	*/
+
+	function hex2a(hexx) {
+		if(hexx == undefined) return "";
+	    var hex = hexx.toString();//force conversion
+	    var str = '';
+	    for (var i = 0; i < hex.length; i += 2)
+	        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+	    return str;
+	}
+
+	/*
+	/
+	/ FUNCTION to populate the bounty cards on home page
+	/
+	*/
+
+	function fillBounties(title,detail,amount,hash) {
+
+
+		var a1 = '<div class="col-sm-6" style="padding-bottom: 10px;"><div class="card" style="padding: 10px; border: grey solid 1px; border-radius: 4px;"><div class="card-block"><h3 class="card-title">';
+		var a2 = '</h3><p class="card-text">';
+		var a3 = '.<br></p><a href="#" class="btn btn-primary">Bounty Reward: ';
+		var a4 = ' XEM</a></div></div></div>';
+
+		var cardTemplate = a1+title+a2+detail+a3+amount+a4;
+		// alert(cardTemplate
+
+		var mydiv = document.getElementById("bounty_row");
+		var newDiv = document.createElement('div');
+	    newDiv.innerHTML = cardTemplate;
+	    // alert(newDiv.innerHTML);
+
+	    while (newDiv.firstChild) {
+	        mydiv.appendChild(newDiv.firstChild);
+	    }					  
+
+
+	}
+
+
+	/*
+	/
+	/ FUNCTION to populate the Information cards on home page
+	/
+	*/
+
+	function fillInformations(title,detail,amount,hash) {
+
+
+		var a1 = '<div class="col-sm-6" style="padding-bottom: 10px;"><div class="card" style="padding: 10px; border: grey solid 1px; border-radius: 4px;"><div class="card-block"><h3 class="card-title">';
+		var a2 = '</h3><p class="card-text">';
+		var a3 = '.<br></p><a href="#" class="btn btn-primary">Information Value: ';
+		var a4 = ' XEM</a></div></div></div>';
+
+		var cardTemplate = a1+title+a2+detail+a3+amount+a4;
+		// alert(cardTemplate
+
+		var mydiv = document.getElementById("information_row");
+		var newDiv = document.createElement('div');
+	    newDiv.innerHTML = cardTemplate;
+	    // alert(newDiv.innerHTML);
+
+	    while (newDiv.firstChild) {
+	        mydiv.appendChild(newDiv.firstChild);
+	    }					  
+
+
+	}
 
 });

@@ -32,19 +32,12 @@
     <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#defaultNavbar1"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button>
-      <a class="navbar-brand" href="#">TipHunter</a></div>
+      <a class="navbar-brand" href="./index.html">TipHunter</a></div>
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="defaultNavbar1">
-		<ul class="nav navbar-nav navbar-right">
-        <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">User's Name <span class="caret"></span></a>
-          <ul class="dropdown-menu" role="menu">
-            <li><a href="#">All Bounties</a></li>
-            <li><a href="#">Messages</a></li>
-            <li class="divider"></li>
-            <li><a href="#">Logout</a></li>
-          </ul>
-        </li>
-      </ul>
+		  <ul class="nav navbar-nav navbar-right">
+          <li onclick="login()" class="open"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="true">Login</a></li>
+        </ul>
     </div>
     <!-- /.navbar-collapse --> 
   </div>
@@ -72,6 +65,7 @@
 	  <div class="form-group">
 		  
 		  <div class="col-10">
+      <input required="" class="form-control" type="text" placeholder="name..." id="user_name">
 			<input required="" class="form-control" type="text" placeholder="private key..." id="private_key">
 		  </div>
 	  </div>
@@ -109,8 +103,11 @@
 <script type="text/javascript">
   function storePrivateKey() {
     priKey = document.getElementById("private_key").value;
-    if(priKey != null && priKey != "") {
+    userName = document.getElementById("user_name").value;
+
+    if((priKey != null && priKey != "")&&(userName != null && userName != "")) {
       document.cookie = "privateKey="+priKey;
+      document.cookie = "userName="+userName;
       window.location = "./index.html";
     }
   }
