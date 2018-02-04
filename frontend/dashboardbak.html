@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<script type="text/javascript">
+  function checkLogin() {
+    var cookieData = document.cookie;
+    var priKey = cookieData.substring("privateKey=".length,cookieData.length);
+    if(priKey == null || priKey == "") {
+      window.location = "./login.html";
+    }
+  }
+</script>
+
+<style>
+	.point {
+		cursor: pointer;
+	}
+	.point:hover {
+		background: #D3C8C8;
+	}
+	.same_line {
+		display: inline-block;
+	}
+	.sender_name {
+		padding-right: 30px;
+		display: inline-block;
+	}
+	.limit_char {
+	  display: inline-block;
+	  width: 80%;
+	  overflow: hidden;
+	  white-space: nowrap;
+	  text-overflow: ellipsis;
+	}
+	
+</style>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard | TipHunter</title>
+
+<!-- Bootstrap -->
+<link href="css/bootstrap.css" rel="stylesheet">
+
+<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body onload="checkLogin()">
+<nav class="navbar navbar-default">
+  <div class="container-fluid"> 
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#defaultNavbar1"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button>
+      <a class="navbar-brand" href="./index.html">TipHunter</a></div>
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="defaultNavbar1">
+		<ul class="nav navbar-nav navbar-right">
+		  <li onclick="login()" class="open"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="true">Login</a></li>
+		</ul>
+    </div>
+    <!-- /.navbar-collapse --> 
+  </div>
+  <!-- /.container-fluid --> 
+</nav>
+<!-- Title of Bounty -->
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-6 col-md-offset-3">
+      <h1 class="text-center">My Bounties/Informations</h1>
+    </div>
+  </div>
+  <hr>
+</div>
+		
+<!-- Table of messages -->
+<div id="happysingh" style="padding: 20px;">
+	<table class="table table-bordered">
+	  <tbody>
+		<tr>
+		  <th scope="row">1</th>
+		  <td><b>Bounty Title</b><br>
+		  	<table class="table">
+		  		<br>
+		  		<tr class="point">
+				  <td scope="col" class="limit_char same_line message"><span class="glyphicon glyphicon-triangle-right"></span> Hello Someone will try to kill you on the evening of the 10/02/2018</td>
+				  <td scope="col" class="message_date">31/01/2018</td>
+				</tr>
+			</table>
+		  </td>
+		</tr>
+		
+		<!-- Bounty 2 -->
+		<tr>
+		  <th scope="row">2</th>
+		  <td><strong>Bounty Title 2</strong><br>
+		    <table class="table">
+		  	<br>
+	  		
+			</table>
+		  </td>
+		</tr>
+		<!-- Bounty 3 -->
+		<tr>
+		  <th scope="row">3</th>
+		  <td><strong>Bounty Title 3</strong><br>
+		    <table class="table">
+		  	<br>
+		  		<tr class="point">
+					<th scope="col" class="sender_name" ><span class="glyphicon glyphicon-triangle-right"></span> John</th>
+				  <td scope="col" class="limit_char same_line message">Hello Someone will try to kill you on the evening of the 10/02/2018</td>
+				  <td scope="col" class="message_date">31/01/2018</td>
+				</tr>
+				<tr class="point">
+				  <th scope="col" class="sender_name" ><span class="glyphicon glyphicon-triangle-right"></span> Jack</th>
+				  <td scope="col" class="limit_char same_line message">I saw 2 guys talking about robbing the TSA bank on 11/02/2018</td>
+				  <td scope="col" class="message_date">01/02/2018</td>
+				</tr>
+			</table>
+		  </td>
+		</tr>
+	  </tbody>
+	</table>
+ </div>
+<!-- End Table of messages -->
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) --> 
+<script src="js/jquery-1.11.3.min.js"></script>
+
+<!-- Include all compiled plugins (below), or include individual files as needed --> 
+<script src="js/bootstrap.js"></script>
+<script src="./js/nem-sdk.js"></script>
+<script src="./js/main.js"></script>
+<script type="text/javascript">
+
+	function login() {
+		window.location = "./login.html";
+	}
+
+	var cookieData = document.cookie;
+	var name = "userName="
+	var ca = document.cookie.split(';');
+	var userName;
+	for(var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            userName = c.substring(name.length, c.length);
+        }
+    }
+ 
+    if(userName != null && userName != "") {
+    	var a1 = '<ul class="nav navbar-nav navbar-right"><li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">'
+		var a2 = ' <span class="caret"></span></a><ul class="dropdown-menu" role="menu"><li><a href="./dashboard.html">My Bounties</a></li><li><a href="#">Messages</a></li><li class="divider"></li><li class="logout""><a">Logout</a></li></ul></li></ul>'
+		var uldata = a1+userName+a2;
+
+		// alert(cardTemplate
+
+		var mydiv = document.getElementById("defaultNavbar1");
+		mydiv.innerHTML = "";
+		var newDiv = document.createElement('div');
+	    newDiv.innerHTML = uldata;
+	    // alert(newDiv.innerHTML);
+
+	    while (newDiv.firstChild) {
+	        mydiv.appendChild(newDiv.firstChild);
+	    }		
+    }
+</script>
+
+</body>
+</html>

@@ -398,7 +398,8 @@ $(document).ready(function() {
 							if(((JSONmsg.p == 'i') || (JSONmsg.p == 'b')) && !(allCompletedHashes[hash])) {
 								myBounties.push(JSONmsg);
 								j++;
-								myBountiesHash[hash] = j;
+								myBountiesHash[hash] = {bnty_nbr:j,msg_nbr:0};
+								// console.log(myBountiesHash[hash]);
 								createBountyTable(j, JSONmsg.t);
 							}
 						} catch(e) {
@@ -412,9 +413,12 @@ $(document).ready(function() {
 						var msg = hex2a(userIncomingTransactions[i].transaction.message.payload);
 						var JSONmsg = JSON.parse(msg);
 						var hash = JSONmsg.h;
-						if(myBountiesHash[hash]) {
+						if(myBountiesHash[hash].bnty_nbr) {
+						// console.log(hash);
+							myBountiesHash[hash].msg_nbr++;
+							// console.log(myBountiesHash[hash]);
 							var date = toDate(parseInt(userIncomingTransactions[i].transaction.timeStamp)+nemesisTime);
-							fillMessage(myBountiesHash[hash], JSONmsg.m, date);
+							fillMessage(myBountiesHash[hash].bnty_nbr, JSONmsg.m, date, hash);
 						}
 					} catch(e) {
 						continue;
@@ -552,11 +556,9 @@ $(document).ready(function() {
 
 		var newTr = document.createElement('div');
 		var trOuter =  `<tr>
-		  					<th class="bounty_number" scope="row" style="color: red; font-size: 1.3em;"></th>
-		  					<td><b class="point-nocolor bounty_title">Bounty Title</b><br><br>
+		  					<th class="bounty_number" scope="row"></th>
+		  					<td><b class="bounty_title" >Bounty Title</strong><br><br>
 			  					<table class="table bounty_inner_table">
-			  						<tbody>
-			  						</tbody>
 								</table>
 			  				</td>
 						</tr>`
@@ -582,20 +584,25 @@ $(document).ready(function() {
 	/	@param (bounty number in the view, message of the sender, date of the message)
 	*/
 
-	function fillMessage(number, msg, date) {
-
+	function fillMessage(bounty_number, msg, date, hash) {
+// console.log(myBountiesHash[hash].msg_nbr);
 		var trInner =  `<tr class="point">
 						  <td scope="col" class="message limit_char same_line message"><span class="glyphicon glyphicon-triangle-right"></span> </td>
 						  <td scope="col" class="message_date"></td>
 						</tr><br>`
-	
-		$tr = $('#bounty_table_body tr:nth-child('+number+')');
+
+		$tr = $('#bounty_table_body tr:nth-child('+bounty_number+')');
 		$innerTable = $tr.find('table');
-		$innerBody = $innerTable.find('tbody');
-		$innerBody.append(trInner);
-		$message = $innerBody.find('td.message').last();
+		$innerTr = $innerTable.find('tr:eq(0)');
+		console.log(myBountiesHash[hash].msg_nbr);
+		console.log($innerTr);
+		$innerTable.append(trInner);
+		$message = $innerTable.find('td.message:nth-child('+myBountiesHash[hash].msg_nbr+')');
+		// console.log($message);
 		$message.append(msg);
-		$msgDate = $innerBody.find('td.message_date').last();
+		$msgDate = $innerTable.find('td.message_date:nth-child('+myBountiesHash[hash].msg_nbr+')');
+		// console.log($msgDate);
+		// console.log($msgDate);
 		$msgDate.append(date);
 	}
 

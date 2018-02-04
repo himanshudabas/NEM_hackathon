@@ -13,6 +13,15 @@
 </script>
 
 <style>
+	
+	.point-nocolor {
+		cursor: pointer;
+		color: red;
+		font-size: 1.3em;
+	}
+	.point-nocolor:hover {
+		color: #aaa;
+	}
 	.point {
 		cursor: pointer;
 	}
@@ -28,7 +37,7 @@
 	}
 	.limit_char {
 	  display: inline-block;
-	  width: 80%;
+	  width: 60vw;
 	  overflow: hidden;
 	  white-space: nowrap;
 	  text-overflow: ellipsis;
@@ -78,67 +87,14 @@
 </div>
 		
 <!-- Table of messages -->
-<div style="padding: 20px;">
-	<table class="table table-bordered">
-	  <tbody>
-		<tr>
-		  <th scope="row">1</th>
-		  <td><b>Bounty Title</b><br>
-		  	<table class="table">
-		  	<br>
-		  		<tr class="point">
-					<th scope="col" class="sender_name" ><span class="glyphicon glyphicon-triangle-right"></span> John</th>
-				  <td scope="col" class="limit_char same_line message">Hello Someone will try to kill you on the evening of the 10/02/2018</td>
-				  <td scope="col" class="message_date">31/01/2018</td>
-				</tr>
-				<tr class="point">
-				  <th scope="col" class="sender_name" ><span class="glyphicon glyphicon-triangle-right"></span> Jack</th>
-				  <td scope="col" class="limit_char same_line message">I saw 2 guys talking about robbing the TSA bank on 11/02/2018</td>
-				  <td scope="col" class="message_date">01/02/2018</td>
-				</tr>
-			</table>
-		  </td>
-		</tr>
-		
-		<tr>
-		  <th scope="row">2</th>
-		  <td><strong>Bounty Title 2</strong><br>
-		    <table class="table">
-		  	<br>
-	  		  <tr class="point">
-					<th scope="col" class="sender_name" ><span class="glyphicon glyphicon-triangle-right"></span> John</th>
-				  <td scope="col" class="limit_char same_line message">Hello Someone will try to kill you on the evening of the 10/02/2018</td>
-				  <td scope="col" class="message_date">31/01/2018</td>
-				</tr>
-			  <tr class="point">
-				  <th scope="col" class="sender_name" ><span class="glyphicon glyphicon-triangle-right"></span> Jack</th>
-				  <td scope="col" class="limit_char same_line message">I saw 2 guys talking about robbing the TSA bank on 11/02/2018</td>
-				  <td scope="col" class="message_date">01/02/2018</td>
-				</tr>
-			</table>
-		  </td>
-		</tr>
-		<tr>
-		  <th scope="row">3</th>
-		  <td><strong>Bounty Title 3</strong><br>
-		    <table class="table">
-		  	<br>
-		  		<tr class="point">
-					<th scope="col" class="sender_name" ><span class="glyphicon glyphicon-triangle-right"></span> John</th>
-				  <td scope="col" class="limit_char same_line message">Hello Someone will try to kill you on the evening of the 10/02/2018</td>
-				  <td scope="col" class="message_date">31/01/2018</td>
-				</tr>
-				<tr class="point">
-				  <th scope="col" class="sender_name" ><span class="glyphicon glyphicon-triangle-right"></span> Jack</th>
-				  <td scope="col" class="limit_char same_line message">I saw 2 guys talking about robbing the TSA bank on 11/02/2018</td>
-				  <td scope="col" class="message_date">01/02/2018</td>
-				</tr>
-			</table>
-		  </td>
-		</tr>
-	  </tbody>
+<div id="table_container" style="padding: 20px;">
+	<table>
+		<tbody id="bounty_table_body">
+			
+		</tbody>
 	</table>
- </div>
+</div>
+
 <!-- End Table of messages -->
 
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) --> 
@@ -170,7 +126,7 @@
  
     if(userName != null && userName != "") {
     	var a1 = '<ul class="nav navbar-nav navbar-right"><li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">'
-		var a2 = ' <span class="caret"></span></a><ul class="dropdown-menu" role="menu"><li><a href="#">All Bounties</a></li><li><a href="#">Messages</a></li><li class="divider"></li><li class="logout""><a">Logout</a></li></ul></li></ul>'
+		var a2 = ' <span class="caret"></span></a><ul class="dropdown-menu" role="menu"><li><a href="./dashboard.html">My Bounties</a></li><li><a href="#">Messages</a></li><li class="divider"></li><li class="logout""><a">Logout</a></li></ul></li></ul>'
 		var uldata = a1+userName+a2;
 
 		// alert(cardTemplate
