@@ -13,6 +13,6 @@ open localhost to view the application.
 
 ## Other Information
 
-Tiphunter's App flow and Idea is located inside the 'flwo and idea' directory.
+Tiphunter's App flow and Idea is located inside the 'flow and idea' directory.
 
 Snapshots are present in the 'snapshots' directory.
