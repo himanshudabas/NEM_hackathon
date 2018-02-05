@@ -1,5 +1,8 @@
 ## Prerequisites
-Local server is needed to start the application.
+npm is required to install live-server.
+
+Local server is needed to start the application on Localhost.
+
 ```
 $ npm install live-server
 ```
