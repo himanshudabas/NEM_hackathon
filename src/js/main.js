@@ -120,6 +120,43 @@ $(document).ready(function() {
 		});
 	}
 
+
+		function sendAmount(recipientAddr, amount, msg) {
+			// Check form for errors
+			if(!priKey || !newBountyPool) return alert('private key missing !');
+			if (!nem.model.address.isValid(nem.model.address.clean(newBountyPool))) return alert('Invalid recipent address !');
+
+			// Set the private key in common object
+			common.privateKey = priKey;
+
+			// Check private key for errors
+			if (common.privateKey.length !== 64 && common.privateKey.length !== 66) return alert('Invalid private key, length must be 64 or 66 characters !');
+	    	if (!nem.utils.helpers.isHexadecimal(common.privateKey)) return alert('Private key must be hexadecimal only !');
+			// Set the cleaned amount into transfer transaction object
+			transferTransaction.amount = nem.utils.helpers.cleanTextAmount(amount);
+
+			// Recipient address must be clean (no hypens: "-")
+			transferTransaction.recipient = nem.model.address.clean(recipientAddr);
+
+			// Set message
+			transferTransaction.message = msg;
+
+			// Prepare the updated transfer transaction object
+			var transactionEntity = nem.model.transactions.prepare("transferTransaction")(common, transferTransaction, nem.model.network.data.testnet.id);
+			
+			// Serialize transfer transaction and announce
+			nem.model.transactions.send(common, transactionEntity, endpoint).then(function(res){
+				// If code >= 2, it's an error
+				if (res.code >= 2) {
+					alert(res);
+				} else {
+					alert(res);
+				}
+			}, function(err) {
+				console.log(err);
+			});
+		}
+
 	
 	var $title;
 	var $detail;
@@ -464,7 +501,7 @@ $(document).ready(function() {
 								myBounties.push(JSONmsg);
 								j++;
 								myBountiesHash[hash] = j;
-								createBountyTable(j, JSONmsg.t);
+								createBountyTable(j, JSONmsg.t, hash);
 							}
 						} catch(e) {
 							continue;
@@ -476,21 +513,67 @@ $(document).ready(function() {
 					try {
 						var msg = hex2a(userIncomingTransactions[i].transaction.message.payload);
 						msg = msg.replace(/(\r\n|\n|\r)/gm,"");
+						var sender = nem.model.address.toAddress(userIncomingTransactions[i].transaction.signer, nem.model.network.data.testnet.id);
 						var JSONmsg = JSON.parse(msg);
 						var hash = JSONmsg.h;
 						if(myBountiesHash[hash]) {
 							var date = toDate(parseInt(userIncomingTransactions[i].transaction.timeStamp)+nemesisTime);
-							fillMessage(myBountiesHash[hash], JSONmsg.m, date);
+							fillMessage(myBountiesHash[hash], JSONmsg, date, sender);
 						}
 					} catch(e) {
 						continue;
 					}
 				}
+				$popupBody = $('#popup_body');
+				$popupTitle = $('#popup_title');
+				$sender = $('#sender');
+
+				$('.bounty_title').on('click',function(){
+
+					var _hash = $(this)[0].attributes['data-hash'].value;
+					var _title = $(this)[0].childNodes[0].wholeText;
+					$popupBody.html('<p style="color: red;">Do you really want to close this bounty/information with a status of "fail" ?</p>');
+					$popupTitle.html("<b>"+_title+"</b>");
+					$('#accept_btn').css('display','none');
+					$('#close_btn').css('display','inline-block');
+					$('#close_btn').attr('data-hash', _hash);
+				});
+				$('.msg_dt').on('click',function(){
+
+					$popupBody.html($(this).find('td')[0].innerText);
+					$popupTitle.html("<b>Date:</b> "+$(this).find('td')[1].innerText);
+					$sender.html('<b>Sender: </b>'+$(this)[0].attributes['data-sender'].value);
+					$('#close_btn').css('display','none');
+					$('#accept_btn').css('display','inline-block');
+					$('#accept_btn').attr('data-hash', $(this)[0].attributes['data-hash'].value);
+					$('#accept_btn').attr('data-sender', $(this)[0].attributes['data-sender'].value);
+				});
+				$('#accept_btn').on('click',function(){
+
+					var _hash = $(this)[0].attributes['data-hash'].value;
+					var _sender = $(this)[0].attributes['data-sender'].value;
+					var _msg = '{"r":"p","h":"'+_hash+'"}';
+					var _amount = allTransactionsHash[_hash].a;
+					sendToOwner(closedBountyPool, _msg);
+					_msg = '{"m":"bounty reward for sending the tip","h":"'+_hash+'"}';
+					sendAmount(_sender, _amount, _msg);
+					window.location = "/";
+				});
+				$('#close_btn').on('click',function(){
+
+					var _hash = $(this)[0].attributes['data-hash'].value;
+					var _msg = '{"r":"f","h":"'+_hash+'"}';
+					sendToOwner(closedBountyPool, _msg);
+					window.location = "/";
+				});
 
 			}, function(failure) {
 				console.log("failed to read users incoming transactions.\n");
 				console.log(failure);
-			})
+			});
+
+
+
 		}, function(failure) {
 			console.log("failed to read server's incoming transactions.\n");
 			console.log(failure);
@@ -840,7 +923,7 @@ $(document).ready(function() {
 	/	@param (bounty number in the view, title of the bounty)
 	*/
 
-	function createBountyTable(number, title) { // number is bounty number, title is bounty title, msg is array of all messages related to that bounty;
+	function createBountyTable(number, title, hash) { // number is bounty number, title is bounty title, msg is array of all messages related to that bounty;
 
 		
 		if(number == 1) {
@@ -852,7 +935,7 @@ $(document).ready(function() {
 		var newTr = document.createElement('div');
 		var trOuter =  `<tr>
 		  					<th class="bounty_number" scope="row" style="color: red; font-size: 1.3em;"></th>
-		  					<td><b class="point-nocolor bounty_title">Bounty Title</b><br><br>
+		  					<td><b data-hash="`+hash+`" data-toggle="modal" data-target="#popup" class="point-nocolor bounty_title">Bounty Title</b><br><br>
 			  					<table class="table bounty_inner_table">
 			  						<tbody>
 			  						</tbody>
@@ -878,10 +961,10 @@ $(document).ready(function() {
 	/	@param (bounty number in the view, message of the sender, date of the message)
 	*/
 
-	function fillMessage(number, msg, date) {
+	function fillMessage(number, msg, date, sender) {
 
-		var trInner =  `<tr class="point">
-						  <td scope="col" class="message limit_char same_line message"><span class="glyphicon glyphicon-triangle-right"></span> </td>
+		var trInner =  `<tr data-toggle="modal" data-target="#popup" data-hash="`+msg.h+`" data-sender="`+sender+`" class="point msg_dt">
+						  <td scope="col" class=" limit_char same_line message"><span class="glyphicon glyphicon-triangle-right"></span> </td>
 						  <td scope="col" class="message_date"></td>
 						</tr><br>`
 	
@@ -890,7 +973,7 @@ $(document).ready(function() {
 		$innerBody = $innerTable.find('tbody');
 		$innerBody.append(trInner);
 		$message = $innerBody.find('td.message').last();
-		$message.append(msg);
+		$message.append(msg.m);
 		$msgDate = $innerBody.find('td.message_date').last();
 		$msgDate.append(date);
 	}

@@ -23,6 +23,7 @@
 		color: #aaa;
 	}
 	.point {
+		background: #ddd;
 		cursor: pointer;
 	}
 	.point:hover {
@@ -38,9 +39,7 @@
 	.limit_char {
 	  display: inline-block;
 	  width: 60vw;
-	  overflow: hidden;
-	  white-space: nowrap;
-	  text-overflow: ellipsis;
+	  word-wrap: break-word;
 	}
 	
 </style>
@@ -95,6 +94,29 @@
 	</table>
 </div>
 
+
+<!-- Modal -->
+<div class="modal fade" id="popup" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="popup_title">Title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="popup_body">
+        <!-- bounty details here -->
+      </div>
+      <div class="modal-footer">
+      	<p id="sender"></p>
+        <button type="button" id="close_btn" class="btn btn-danger">Close this Bounty</button>
+        <button type="button" id="accept_btn" class="btn btn-primary">Accept Info</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- End Table of messages -->
 
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) --> 
@@ -109,6 +131,8 @@
 	function login() {
 		window.location = "./login.html";
 	}
+
+
 
 	var cookieData = document.cookie;
 	var name = "userName="
