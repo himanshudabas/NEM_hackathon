@@ -5,9 +5,13 @@
   function checkLogin() {
     var cookieData = document.cookie;
     var priKey = cookieData.substring("privateKey=".length,cookieData.length);
-    if(priKey != null || priKey != "") {
-      window.location = "./index.html";
+    if(cookieData != undefined && cookieData != "") {
+      console.log(cookieData);
+      if(priKey != null || priKey != "" && priKey != undefined) {
+        window.location = "./index.html";
+      }
     }
+    
   }
 </script>
 
@@ -32,7 +36,7 @@
     <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#defaultNavbar1"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button>
-      <a class="navbar-brand" href="./index.html">TipHunter</a></div>
+      <a class="navbar-brand" href="/">TipHunter</a></div>
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="defaultNavbar1">
 		  <ul class="nav navbar-nav navbar-right">

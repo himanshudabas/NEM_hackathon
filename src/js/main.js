@@ -15,20 +15,25 @@ $(document).ready(function() {
 	var nemesisTime = 1427587585;
 
 	var cookieData = document.cookie;
-    var ca = cookieData.split(';');
-    var ky = ca[0]
+	if(cookieData != undefined && cookieData != "") {
 
-    // Private key of the user
-    var priKey = ky.substring("privateKey=".length,cookieData.length);
+	    var ca = cookieData.split(';');
+	    var ky = ca[0];
 
-    // Public address of the user
-    var keyPair = nem.crypto.keyPair.create(priKey);
-    var publicKey = keyPair.publicKey.toString();
 
-    // NEM Address of the user 			// here we use testnet network ID
-    var address = nem.model.address.toAddress(publicKey, nem.model.network.data.testnet.id)
+	    // Private key of the user
+	    var priKey = ky.substring("privateKey=".length,cookieData.length);
 
-	var serverAddress = "TABVE6MB5FOPQBAGE5NZNJZ6744JQJL65OKPPO4H";
+	    // Public address of the user
+
+	    var keyPair = nem.crypto.keyPair.create(priKey);
+	    var publicKey = keyPair.publicKey.toString();
+	    // NEM Address of the user 			// here we use testnet network ID
+	    var address = nem.model.address.toAddress(publicKey, nem.model.network.data.testnet.id);
+	}
+
+	var newBountyPool = "TC2HLXSGBOBIVZHDHOHFYCERJDOIFPLDQC3QAKZL";
+	var closedBountyPool = "TAGI6BUAY4VDNAQJWXL5VH6A5MUGSFXO34LNALB3";
 
 	// dishendra's account : TB5C7AVB2XPGMSTVDZX3GIBBQ3TXRN3GXPTUURTU
 	// himanshu's account  : TABVE6MB5FOPQBAGE5NZNJZ6744JQJL65OKPPO4H
@@ -37,21 +42,15 @@ $(document).ready(function() {
 	/	Logout function
 	*/
 
-	$(".logout").on('click',()=>{
-		delete_cookie("userName");
-		delete_cookie("PrivateKey");
-		window.location = "./login.html";
-	})
-
 	var delete_cookie = function(name) {
-	    document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+	    document.cookie = name+'=; Max-Age=-99999999;';  
 	};
 
 
 	function send(msg) {
 		// Check form for errors
-		if(!priKey || !serverAddress) return alert('private key missing !');
-		if (!nem.model.address.isValid(nem.model.address.clean(serverAddress))) return alert('Invalid recipent address !');
+		if(!priKey || !newBountyPool) return alert('private key missing !');
+		if (!nem.model.address.isValid(nem.model.address.clean(newBountyPool))) return alert('Invalid recipent address !');
 
 		// Set the private key in common object
 		common.privateKey = priKey;
@@ -63,7 +62,7 @@ $(document).ready(function() {
 		transferTransaction.amount = nem.utils.helpers.cleanTextAmount(0);
 
 		// Recipient address must be clean (no hypens: "-")
-		transferTransaction.recipient = nem.model.address.clean(serverAddress);
+		transferTransaction.recipient = nem.model.address.clean(newBountyPool);
 
 		// Set message
 		transferTransaction.message = msg;
@@ -80,7 +79,44 @@ $(document).ready(function() {
 				alert(res);
 			}
 		}, function(err) {
-			alert(JSON.stringify(err));
+			console.log(err);
+		});
+	}
+
+
+	function sendToOwner(recipientAddr, msg) {
+		// Check form for errors
+		if(!priKey || !newBountyPool) return alert('private key missing !');
+		if (!nem.model.address.isValid(nem.model.address.clean(newBountyPool))) return alert('Invalid recipent address !');
+
+		// Set the private key in common object
+		common.privateKey = priKey;
+
+		// Check private key for errors
+		if (common.privateKey.length !== 64 && common.privateKey.length !== 66) return alert('Invalid private key, length must be 64 or 66 characters !');
+    	if (!nem.utils.helpers.isHexadecimal(common.privateKey)) return alert('Private key must be hexadecimal only !');
+		// Set the cleaned amount into transfer transaction object
+		transferTransaction.amount = nem.utils.helpers.cleanTextAmount(0);
+
+		// Recipient address must be clean (no hypens: "-")
+		transferTransaction.recipient = nem.model.address.clean(recipientAddr);
+
+		// Set message
+		transferTransaction.message = msg;
+
+		// Prepare the updated transfer transaction object
+		var transactionEntity = nem.model.transactions.prepare("transferTransaction")(common, transferTransaction, nem.model.network.data.testnet.id);
+		
+		// Serialize transfer transaction and announce
+		nem.model.transactions.send(common, transactionEntity, endpoint).then(function(res){
+			// If code >= 2, it's an error
+			if (res.code >= 2) {
+				alert(res);
+			} else {
+				alert(res);
+			}
+		}, function(err) {
+			console.log(err);
 		});
 	}
 
@@ -88,14 +124,17 @@ $(document).ready(function() {
 	var $title;
 	var $detail;
 	var $amount;
+	var $resultInfo;
+
 
 	$("#create_bounty").on('click', ()=> {
-		document.location = "./bounty.html";
+		document.location = "./create_bounty.html";
 	});
 
 	$("#create_information").on('click', ()=> {
-		document.location = "./information.html";
+		document.location = "./create_information.html";
 	});
+
 
 	// create a bounty
 	$("#submit_bounty_to_blockchain").on('click', ()=> {
@@ -151,36 +190,25 @@ $(document).ready(function() {
 			alert("please check your input data.")
 		}
 
-		// var time = 0;
-		// $up = $('#countdown_information');
-		// var miningCountdown = setInterval(()=>{
-		// 	$up.innerHTML = "wait "+(25-time)+" seconds for the transaction to get harvested.";
-		// 	time++;
-		// },1000)
-		
-		// setTimeout(()=>{
-		// 	clearInterval(miningCountdown);
-		// 	document.location = "./index.html";
-		// },25000);
 	});
 
 
 	/*
 	/
-	/ FETCH ALL OUTGOING TRANSACTIONS of an account
+	/ FETCH ALL Incoming TRANSACTIONS of an account
 	/
 	*/
 
 	let allCompletedTransactions = [];
 	let allCompletedHashes = {};
 
-	readOutgoing = function(address, startTrxId, successCallback, failureCallback) {
+	readIncoming2 = function(address, startTrxId, successCallback, failureCallback) {
 
 	        
 	        // 3rd argument is the transaction hash (always empty)
 	        // 4th argument is the transaction ID to begin with
 	        nem.com.requests.account.transactions
-	            .outgoing(endpoint, address, null, startTrxId)
+	            .incoming(endpoint, address, null, startTrxId)
 	            .then(function(response)
 	        {
 	            let transactions = response.data;
@@ -196,14 +224,14 @@ $(document).ready(function() {
 	            }
 
 	            if (transactions.length < 25) {
-	                // done reading all outgoing transactions for this account
+	                // done reading all incoming2 transactions for this account
 	                if (typeof successCallback == "function") {
 	                    return successCallback("success");
 	                }
 	            }
 
-	            // recursion until we read all outgoing transactions for this account.
-	            return readOutgoing(address, lastId, successCallback, failureCallback);
+	            // recursion until we read all incoming2 transactions for this account.
+	            return readIncoming2(address, lastId, successCallback, failureCallback);
 
 
 	        }, function(error) {
@@ -216,16 +244,17 @@ $(document).ready(function() {
 
 	/*
 	/
-	/	FETCH all outgoing transactions from SERVERADDRESS
+	/	FETCH all incoming2 transactions from SERVERADDRESS
 	/
 	*/
 
 	if(document.title == 'Home | TipHunter') {
-	 	readOutgoing(serverAddress, null, function(success) {
+	 	readIncoming2(closedBountyPool, null, function(success) {			//MODIFIED
 
 	 		for(let i=0; i<allCompletedTransactions.length; i++) {
 	 			try {
 	 				msg = hex2a(allCompletedTransactions[i].transaction.message.payload);
+	 				msg = msg.replace(/(\r\n|\n|\r)/gm,"");
 	 				JSONmsg = JSON.parse(msg);
 	 				result = JSONmsg.r;
 	 				completedhash = JSONmsg.h;
@@ -251,20 +280,34 @@ $(document).ready(function() {
 
 	let allTransactions = [];
 	let userIncomingTransactions = [];
+	let allTransactionsHash = {};
+	let owner = {};
 
-	readIncoming = function(address, startTrxId, successCallback, failureCallback) {
+	readIncoming = function(localAddr, startTrxId, successCallback, failureCallback) {
 
-	        
-
-	        // 3rd argument is the transaction hash (always empty)
-	        // 4th argument is the transaction ID to begin with 
 	        nem.com.requests.account.transactions
-	            .incoming(endpoint, address, null, startTrxId)
+	            .incoming(endpoint, localAddr, null, startTrxId)
 	            .then(function(response)
 	        {
 	            let transactions = response.data;
-	            if(address == serverAddress) {
+
+	            if(localAddr == newBountyPool) {
 	            	allTransactions = allTransactions.concat(transactions);
+	            	for(let i=0; i<transactions.length; i++) {
+
+	            		try {
+	            			var ownerAddress = nem.model.address.toAddress(transactions[i].transaction.signer, nem.model.network.data.testnet.id);
+	            			owner[transactions[i].meta.hash.data] = ownerAddress;
+	            			if(allTransactions[i].transaction.message.payload == undefined) throw e;
+	            			var msg = hex2a(allTransactions[i].transaction.message.payload);
+	            			msg = msg.replace(/(\r\n|\n|\r)/gm,"");
+	 						JSONmsg = JSON.parse(msg);
+	 						allTransactionsHash[transactions[i].meta.hash.data] = JSONmsg;
+	            		} catch(e) {
+	            			allTransactionsHash[transactions[i].meta.hash.data] = true;
+	            		}
+	            		
+	            	}
 	            } else {
 	            	userIncomingTransactions = userIncomingTransactions.concat(transactions);
 	            }
@@ -277,14 +320,14 @@ $(document).ready(function() {
 	            }
 
 	            if (transactions.length < 25) {
-	                // done reading all outgoing transactions for this account
+	                // done reading all incoming2 transactions for this account
 	                if (typeof successCallback == "function") {
 	                    return successCallback("success");
 	                }
 	            }
 
-	            // recursion until we read all outgoing transactions for this account.
-	            return readIncoming(address, lastId, successCallback, failureCallback);
+	            // recursion until we read all incoming2 transactions for this account.
+	            return readIncoming(localAddr, lastId, successCallback, failureCallback);
 
 
 	        }, function(error) {
@@ -303,12 +346,13 @@ $(document).ready(function() {
 	*/
 
 	if(document.title == 'Home | TipHunter') {
-		readIncoming(serverAddress, null, function(success) {
+		readIncoming(newBountyPool, null, function(success) {		//MODIFIED
 
 			let bcount, icount;
 			bcount = icount = 0;
 			for(let i=0; i<allTransactions.length; i++) {
 				msg = hex2a(allTransactions[i].transaction.message.payload);
+				msg = msg.replace(/(\r\n|\n|\r)/gm,"");
 				try {
 					JSONmsg = JSON.parse(msg);
 					title = JSONmsg.t;
@@ -350,9 +394,28 @@ $(document).ready(function() {
 
 			    mydiv.appendChild(newDiv.firstChild);
 			}
+
+			$form = $('#submit_form');
+			// Click Listeners for cards
+			$('.information_btn').on('click',function(){
+				$form.attr('action', 'view_information.html');
+				$form.find('input')[0].value = $(this).attr('name');
+			  	$form.submit();
+			});
+
+			$('.bounty_btn').on('click',function(){
+				$form.attr('action', 'view_bounty.html');
+				$form.find('input')[0].value = $(this).attr('name');
+			  	$form.submit();
+			});
+
+
+
 		}, function(failure) {
 			console.log(failure);
 		});
+
+
 	}
 
 	/*
@@ -367,10 +430,11 @@ $(document).ready(function() {
 	
 	if(document.title == 'Dashboard | TipHunter') {
 
-		readOutgoing(serverAddress, null, function(success){
+		readIncoming2(closedBountyPool, null, function(success){		//MODIFIED
 			for(let i=0; i<allCompletedTransactions.length; i++) {
 				try {
 					msg = hex2a(allCompletedTransactions[i].transaction.message.payload);
+					msg = msg.replace(/(\r\n|\n|\r)/gm,"");
 					JSONmsg = JSON.parse(msg);
 					result = JSONmsg.r;
 					completedhash = JSONmsg.h;
@@ -381,10 +445,10 @@ $(document).ready(function() {
 				}
 			}
 		}, function(failure) {
-	 		console.log("failed to read server's outgoing transactions.");
+	 		console.log("failed to read server's incoming2 transactions.");
 	 	});
 
-		readIncoming(serverAddress, null, function(success) {
+		readIncoming(newBountyPool, null, function(success) {					// MODIFIED
 
 			// read user's incoming transactions for any tip/bounty related message.
 			readIncoming(address, null, function(success) {
@@ -393,6 +457,7 @@ $(document).ready(function() {
 					if(allTransactions[i].transaction.signer == publicKey) {
 						try {
 							var msg = hex2a(allTransactions[i].transaction.message.payload);
+							msg = msg.replace(/(\r\n|\n|\r)/gm,"");
 							var hash = allTransactions[i].meta.hash.data;
 							var JSONmsg = JSON.parse(msg);
 							if(((JSONmsg.p == 'i') || (JSONmsg.p == 'b')) && !(allCompletedHashes[hash])) {
@@ -410,6 +475,7 @@ $(document).ready(function() {
 				for(let i=0, j=0; i<userIncomingTransactions.length; i++) {
 					try {
 						var msg = hex2a(userIncomingTransactions[i].transaction.message.payload);
+						msg = msg.replace(/(\r\n|\n|\r)/gm,"");
 						var JSONmsg = JSON.parse(msg);
 						var hash = JSONmsg.h;
 						if(myBountiesHash[hash]) {
@@ -433,6 +499,232 @@ $(document).ready(function() {
 		
 	}
 
+	/*
+	/
+	/ populate the details in view_bounty page
+	/
+	*/
+
+	if(document.title == 'View Bounty | TipHunter') {
+
+		var searchHash = findGetParameter('hash');
+
+		readIncoming2(closedBountyPool, null, function(success) {		//MODIFIED
+
+			for(let i=0; i<allCompletedTransactions.length; i++) {
+				try {
+					msg = hex2a(allCompletedTransactions[i].transaction.message.payload);
+					msg = msg.replace(/(\r\n|\n|\r)/gm,"");
+					JSONmsg = JSON.parse(msg);
+					result = JSONmsg.r;
+					completedhash = JSONmsg.h;
+
+					allCompletedHashes[completedhash] = result;
+				} catch(e) {
+					continue;
+				}
+			}
+		}, function(failure) {
+			console.log(failure);
+		});
+
+		readIncoming(newBountyPool, null, function(success) {		//MODIFIED
+
+
+			try {
+				if(allTransactionsHash[searchHash]) {
+					try {
+						JSONmsg = allTransactionsHash[searchHash];
+						title = JSONmsg.t;
+						detail = JSONmsg.d;
+						amount = JSONmsg.a;
+						property = JSONmsg.p;
+					} catch(e) {}
+					if(allCompletedHashes[searchHash]) {
+						$('body').html('<div style="color: red; text-align: center; font-size: 2em;">Sorry, This bounty is Closed.</div>');
+					} else {
+						if(property == 'b') {
+							fillViewBounty(title, detail, amount, owner[searchHash]);
+						} else {
+							$('body').html('<div style="color: red; text-align: center; font-size: 2em;">Sorry, the info you are trying to access is of type \'Information\' Visit the view_information page instead.</div>');
+						}
+					}
+				} else {
+					console.log(1);
+					$('body').html('<div style="color: red; text-align: center; font-size: 2em;">Sorry, This bounty does not exist.</div>');
+					console.log(2);
+				}
+
+
+				// listner for submit msg button
+				$message = $('#message');
+				var msg;
+				$('#msg_submit').on('click', ()=>{
+					msg = $message.val();
+					var msgToSend = '{"m":"'+msg+'","h":"'+searchHash+'"}';
+					recipent = owner[searchHash];
+					sendToOwner(recipent, msgToSend);
+				});
+
+			} catch(e) {
+				console.log('error'+e);
+			}
+		}, function(failure) {
+			console.log(failure);
+		});
+	}
+
+
+	/*
+	/
+	/ populate the details in view_information page
+	/
+	*/
+
+	if(document.title == 'View Information | TipHunter') {
+
+		var searchHash = findGetParameter('hash');
+
+		readIncoming2(closedBountyPool, null, function(success) {		//MODIFIED
+
+			for(let i=0; i<allCompletedTransactions.length; i++) {
+				try {
+					msg = hex2a(allCompletedTransactions[i].transaction.message.payload);
+					msg = msg.replace(/(\r\n|\n|\r)/gm,"");
+					JSONmsg = JSON.parse(msg);
+					result = JSONmsg.r;
+					completedhash = JSONmsg.h;
+
+					allCompletedHashes[completedhash] = result;
+				} catch(e) {
+					continue;
+				}
+			}
+		}, function(failure) {
+			console.log(failure);
+		});
+
+		readIncoming(newBountyPool, null, function(success) {		//MODIFIED
+
+
+			try {
+				if(allTransactionsHash[searchHash]) {
+					try {
+						JSONmsg = allTransactionsHash[searchHash];
+						title = JSONmsg.t;
+						detail = JSONmsg.d;
+						amount = JSONmsg.a;
+						property = JSONmsg.p;
+					} catch(e) {}
+					if(allCompletedHashes[searchHash]) {
+						$('body').html('<div style="color: red; text-align: center; font-size: 2em;">Sorry, This information is Closed.</div>');
+					} else {
+						if(property == 'i') {
+							fillViewInformation(title, detail, amount, owner[searchHash]);
+						} else {
+							$('body').html('<div style="color: red; text-align: center; font-size: 2em;">Sorry, the info you are trying to access is of type \'Bounty\' Visit the view_bounty page instead.</div>');
+						}
+					}
+				} else {
+					console.log(1);
+					$('body').html('<div style="color: red; text-align: center; font-size: 2em;">Sorry, This information does not exist.</div>');
+					console.log(2);
+				}
+
+			} catch(e) {
+				console.log('error'+e);
+			}
+
+			// listner for submit msg button
+			$message = $('#message');
+			var msg;
+			$('#msg_submit').on('click', ()=>{
+				msg = $message.val();
+				var msgToSend = '{"m":"'+msg+'","h":"'+searchHash+'"}';
+				recipent = owner[searchHash];
+				sendToOwner(recipent, msgToSend);
+			});
+
+		}, function(failure) {
+			console.log(failure);
+		});
+	}
+
+
+	/*
+	/ 
+	/ Search page to find all the available and closed bounties by hash
+	/
+	*/
+
+	if(document.title == 'Search | TipHunter') {
+
+		var searchHash = findGetParameter('hash');
+		$resultInfo = $('#result_info');
+		$searchBounty = $('#search_bounty');
+		$searchBounty.val(searchHash);
+
+
+		readIncoming2(closedBountyPool, null, function(success) {		//MODIFIED
+
+			for(let i=0; i<allCompletedTransactions.length; i++) {
+				try {
+					msg = hex2a(allCompletedTransactions[i].transaction.message.payload);
+					msg = msg.replace(/(\r\n|\n|\r)/gm,"");
+					JSONmsg = JSON.parse(msg);
+					result = JSONmsg.r;
+					completedhash = JSONmsg.h;
+
+					allCompletedHashes[completedhash] = result;
+				} catch(e) {
+					continue;
+				}
+			}
+		}, function(failure) {
+			console.log(failure);
+		});
+
+		readIncoming(newBountyPool, null, function(success) {		//MODIFIED
+
+
+			try {
+				if(allTransactionsHash[searchHash]) {
+					try {
+						JSONmsg = allTransactionsHash[searchHash];
+						title = JSONmsg.t;
+						detail = JSONmsg.d;
+						amount = JSONmsg.a;
+					} catch(e) {}
+					$resultInfo.html('<b style="color: green">Hash: '+searchHash+'.<br><br>Search Successful.</b><br><br>');
+					if(allCompletedHashes[searchHash]) {
+						$resultInfo.append('<b style="color: red">This bounty is already Closed.</b><hr>')
+					} else {
+						$resultInfo.append('<hr>');
+					}
+					fillBounties(title, detail, amount, searchHash);
+				} else {
+					$resultInfo.html('<b style="color: red">Unable to find any bounty/information with hash: '+searchHash+'.</b>');
+				}
+
+			} catch(e) {
+				console.log('error'+e);
+			}
+		}, function(failure) {
+			console.log(failure);
+		});
+
+		
+		if(searchHash) {
+
+
+
+			// console.log(ca);
+		} else {
+			$resultInfo.html('<b style="color: red">Unable to search. Please Enter hash in the search bar.</b>');
+		}
+		// console.log(hash);
+	}
+
 
 	/*
 	/
@@ -441,6 +733,7 @@ $(document).ready(function() {
 	*/
 
 	function hex2a(hexx) {
+
 		if(hexx == undefined) return "";
 	    var hex = hexx.toString();//force conversion
 	    var str = '';
@@ -487,8 +780,8 @@ $(document).ready(function() {
 
 
 		var a1 = '<div class="col-sm-6" style="padding-bottom: 10px;"><div class="card" style="padding: 10px; border: grey solid 1px; border-radius: 4px;"><div class="card-block"><h3 class="card-title">';
-		var a2 = '</h3><p class="card-text">';
-		var a3 = '.<br></p><a href="#" class="btn btn-primary">Bounty Reward: ';
+		var a2 = '</h3><p class="card-text"><input type="text" name="hash" hidden>';
+		var a3 = '.<br></p><a class="bounty_btn btn btn-primary">Bounty Reward: ';
 		var a4 = ' XEM</a></div></div></div>';
 
 		var cardTemplate = a1+title+a2+detail+a3+amount+a4;
@@ -501,9 +794,12 @@ $(document).ready(function() {
 
 	    while (newDiv.firstChild) {
 	        mydiv.appendChild(newDiv.firstChild);
-	    }					  
+	    }				
+	    var anchor = mydiv.querySelectorAll('a');
 
-
+	    anchor[anchor.length-1].name = hash;
+	    // console.log(anchor[anchor.length-1].href);
+	    // console.log(anchor);
 	}
 
 
@@ -517,7 +813,7 @@ $(document).ready(function() {
 
 		var a1 = '<div class="col-sm-6" style="padding-bottom: 10px;"><div class="card" style="padding: 10px; border: grey solid 1px; border-radius: 4px;"><div class="card-block"><h3 class="card-title">';
 		var a2 = '</h3><p class="card-text">';
-		var a3 = '.<br></p><a href="#" class="btn btn-primary">Information Value: ';
+		var a3 = '.<br></p><a class="information_btn btn btn-primary">Information Value: ';
 		var a4 = ' XEM</a></div></div></div>';
 
 		var cardTemplate = a1+title+a2+detail+a3+amount+a4;
@@ -531,7 +827,10 @@ $(document).ready(function() {
 	    while (newDiv.firstChild) {
 	        mydiv.appendChild(newDiv.firstChild);
 	    }					  
+	    var anchor = mydiv.querySelectorAll('a');
 
+	    anchor[anchor.length-1].name = hash;
+	    // console.log(anchor[anchor.length-1].href);
 
 	}
 
@@ -562,17 +861,14 @@ $(document).ready(function() {
 						</tr>`
 
 		
-
 		newDiv.innerHTML = trOuter;
 		$tbody = $('#bounty_table_body');
 		$tbody.append(trOuter);
 		$tr = $('#bounty_table_body tr:nth-child('+number+')');
 		$bountyNumber = $tr.children('th.bounty_number');
 		$bountyNumber[0].innerHTML = number+".";
-		$bountyTitle = $tr.children('td').children('strong.bounty_title');
-		$bountyTitle[0].innerHTML = title;
-		// var tableTemplate = a1+number+a2+title+a3+msg+a4+msg;
-		
+		$bountyTitle = $tr.children('td').children('b.bounty_title');
+		$bountyTitle[0].innerHTML = title;		
 	}
 
 
@@ -599,6 +895,73 @@ $(document).ready(function() {
 		$msgDate.append(date);
 	}
 
+	/*
+	/ Function to retrieve the GET parameter from the search bar
+	/
+	/ @param : parameterName
+	/
+	/ @return :string contaning the parameter;
+	*/
+
+	function findGetParameter(parameterName) {
+		var result = null,
+		    tmp = [];
+		location.search
+		    .substr(1)
+		    .split("&")
+		    .forEach(function (item) {
+		      tmp = item.split("=");
+		      if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+		});
+		return result;
+	}
+
+	/*
+	/
+	/ function to fill details view_bounty page
+	/
+	*/
+
+	function fillViewBounty(title, detail, amount, owner) {
+
+		var hash = findGetParameter('hash');
+		$title = $('#bounty_title');
+		$detail = $('#bounty_details');
+		$reward = $('#reward_value');
+		$owner = $('#owner');
+
+		$title.html(title);
+		$detail.html(detail);
+		$reward.html(amount+" XEM");
+		$owner.html(owner);
+	}
 
 
+	/*
+	/
+	/ function to fill details view_information page
+	/
+	*/
+
+	function fillViewInformation(title, detail, amount, owner) {
+
+		var hash = findGetParameter('hash');
+		$title = $('#info_title');
+		$detail = $('#info_details');
+		$reward = $('#reward_value');
+		$owner = $('#owner');
+
+		$title.html(title);
+		$detail.html(detail);
+		$reward.html(amount+" XEM");
+		$owner.html(owner);
+	}
+
+	setTimeout(()=>{
+		$('#logout').on('click',()=>{
+			delete_cookie("userName");
+			delete_cookie("PrivateKey");
+			window.location = "./login.html";
+		});
+	},3000)
 });

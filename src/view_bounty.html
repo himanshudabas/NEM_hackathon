@@ -33,7 +33,7 @@
     <!-- Brand and toggle get grouped for better mobile display -->
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#defaultNavbar1"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button>
-      <a class="navbar-brand" href="./index.html">TipHunter</a></div>
+      <a class="navbar-brand" href="/">TipHunter</a></div>
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="defaultNavbar1">
 		  <ul class="nav navbar-nav navbar-right">
@@ -48,7 +48,7 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col-md-6 col-md-offset-3">
-      <h1 class="text-center">Bounty Title</h1>
+      <h1 class="text-center" id="bounty_title"></h1>
     </div>
   </div>
   <hr>
@@ -64,7 +64,7 @@
   		<!-- Description of bounty-->
 	  	<div class="details">
 	    	<label for="example-text-input" class="col-2 col-form-label">Details : </label>
-	    	<p id="details">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Delectus officia fuga cumque possimus laborum nulla laboriosam beatae fugiat adipisci, repellat dolorem tenetur quibusdam amet vel et. Recusandae consequatur soluta error.</p>
+	    	<p id="bounty_details"></p>
 		</div>
 		
 		
@@ -77,25 +77,24 @@
 	<div class="row">
 		<div class="col-md-6 col-md-offset-3 col-xs-12">
 			<div style=" display: inline-block;"><h5><b>Amount of XEM for Bounty Reward :</b> </h5></div>
-			<div style="display: inline-block;" id="reward_value">3000 XEM</div>
+			<div style="display: inline-block;" id="reward_value"></div>
 		</div>
 	</div>
 	<br>
 	<hr>
 <!-- End Bounty Reward Amount -->
 
-<div class="form-group">
-			<label for="exampleTextarea">Information/Tip (max 500 characters)</label>
-		<textarea required class="form-control" id="bounty_details" placeholder="Inforamtion..." rows="4"></textarea>
+  <div class="form-group">
+		<label for="exampleTextarea">Information/Tip (max 500 characters)</label>
+		<textarea required class="form-control" id="message" placeholder="Inforamtion..." rows="4"></textarea>
 	  </div>
 
 <!-- Submit Bounty -->
-	<div class="row text-center" style="padding-bottom: 20px;">
-		<button type="button" class="btn btn-success">Send Information</button>
-	</div>
-	
-	<p><b>(Important) Note : </b>For Sending this information you need to deposit 10 XEM in the escrow which will be credited back to your account after the compeletion of the Bounty.</p>
-
+    <div class="row text-center" style="padding-bottom: 20px;">
+		  <button type="button" id="msg_submit" class="btn btn-success">Send Information</button>
+    </div>
+    <p style="font-weight: bold;">Owner: </p>
+    <p id="owner"></p>
 </div>
 
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) --> 
@@ -127,14 +126,14 @@
  
     if(userName != null && userName != "") {
       var a1 = '<ul class="nav navbar-nav navbar-right"><li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">'
-    var a2 = ' <span class="caret"></span></a><ul class="dropdown-menu" role="menu"><li><a href="./dashboard.html">My Bounties</a></li><li><a href="#">Messages</a></li><li class="divider"></li><li class="logout"><a>Logout</a></li></ul></li></ul>'
-    var uldata = a1+userName+a2;
+      var a2 = ' <span class="caret"></span></a><ul class="dropdown-menu" role="menu"><li><a href="./dashboard.html">Manage Bounties</a></li><li class="divider"></li><li id="logout"><a>Logout</a></li></ul></li></ul>'
+      var uldata = a1+userName+a2;
 
-    // alert(cardTemplate
+      // alert(cardTemplate
 
-    var mydiv = document.getElementById("defaultNavbar1");
-    mydiv.innerHTML = "";
-    var newDiv = document.createElement('div');
+      var mydiv = document.getElementById("defaultNavbar1");
+      mydiv.innerHTML = "";
+      var newDiv = document.createElement('div');
       newDiv.innerHTML = uldata;
       // alert(newDiv.innerHTML);
 

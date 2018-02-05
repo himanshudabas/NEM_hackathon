@@ -1,0 +1,130 @@
+<html lang="en">
+<head>
+
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Search | TipHunter</title>
+
+<!-- Bootstrap -->
+<link href="css/bootstrap.css" rel="stylesheet">
+
+</head>
+<body >
+<nav class="navbar navbar-default">
+  <div class="container-fluid"> 
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#defaultNavbar1"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button>
+      <a class="navbar-brand" id="is_index_page" href="/">TipHunter</a></div>
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="defaultNavbar1">
+    <ul class="nav navbar-nav navbar-right">
+      <li onclick="login()" class="open"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="true">Login</a></li>
+
+      </ul>
+    </div>
+    <!-- /.navbar-collapse --> 
+  </div>
+  <!-- /.container-fluid --> 
+</nav>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-6 col-md-offset-3">
+      <h1 class="text-center">TipHunter&nbsp;</h1>
+    </div>
+  </div>
+  
+  <hr>
+</div>
+
+<div class="container">
+  <br>
+<!--  Search Bar -->
+ <div class="row center-block">
+    <div class="col-lg-offset-2 col-lg-7">
+    <form action="search.html" method="GET">
+      <div class="input-group">
+        <input type="text" id="search_bounty" class="form-control" name="hash" placeholder="enter hash...">
+        <span class="input-group-btn">
+        <button class="btn btn-secondary" type="submit"><span class="glyphicon glyphicon-search"></span></button>
+        </span>
+      </div>
+      </form>
+    </div>
+  </div>
+  <hr>
+  
+  <!--Bounty Grid Cards--> 
+  <div>
+    <h1>Search Result</h1>
+    <br><br> 
+    <p id="result_info"></p>
+   <div class="row" id="bounty_row">    
+  </div>
+  </div>
+  <!-- End Bounty Grid Cards -->
+  
+  
+</div>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) --> 
+
+<!-- Include all compiled plugins (below), or include individual files as needed --> 
+<script src="js/jquery-1.11.3.min.js"></script>
+<script src="js/bootstrap.js"></script>
+<script src="./js/nem-sdk.js"></script>
+<script src="./js/main.js"></script>
+<script type="text/javascript">
+
+  var $searchInput = $('#search_bounty');
+
+  $searchInput.keyup(function(event) {
+    if (event.keyCode === 13) {
+        $('#search_bounty_button').click();
+    }
+  });
+
+  $('#search_bounty_button').on('click', ()=>{
+    document.cookie = "searchHash="+$searchInput.val();
+    window.location = "./search.html";
+  });
+
+  function login() {
+    window.location = "./login.html";
+  }
+
+  var cookieData = document.cookie;
+  var name = "userName="
+  var ca = document.cookie.split(';');
+  var userName;
+  for(var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            userName = c.substring(name.length, c.length);
+        }
+    }
+ 
+    if(userName != null && userName != "") {
+      var a1 = '<ul class="nav navbar-nav navbar-right"><li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">'
+      var a2 = ' <span class="caret"></span></a><ul class="dropdown-menu" role="menu"><li><a href="./dashboard.html">Manage Bounties</a></li><li class="divider"></li><li id="logout"><a>Logout</a></li></ul></li></ul>'
+      var uldata = a1+userName+a2;
+
+      // alert(cardTemplate
+
+      var mydiv = document.getElementById("defaultNavbar1");
+      mydiv.innerHTML = "";
+      var newDiv = document.createElement('div');
+      newDiv.innerHTML = uldata;
+      // alert(newDiv.innerHTML);
+
+      while (newDiv.firstChild) {
+          mydiv.appendChild(newDiv.firstChild);
+      }   
+    }
+</script>
+
+</body></html>
