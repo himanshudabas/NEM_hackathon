@@ -74,12 +74,12 @@ $(document).ready(function() {
 		nem.model.transactions.send(common, transactionEntity, endpoint).then(function(res){
 			// If code >= 2, it's an error
 			if (res.code >= 2) {
-				alert(res);
+				alert(JSON.stringify(res));
 			} else {
-				alert(res);
+				alert(JSON.stringify(res));
 			}
 		}, function(err) {
-			console.log(err);
+			alert(JSON.stringify(err));
 		});
 	}
 
@@ -111,12 +111,12 @@ $(document).ready(function() {
 		nem.model.transactions.send(common, transactionEntity, endpoint).then(function(res){
 			// If code >= 2, it's an error
 			if (res.code >= 2) {
-				alert(res);
+				alert(JSON.stringify(res));
 			} else {
-				alert(res);
+				alert(JSON.stringify(res));
 			}
 		}, function(err) {
-			console.log(err);
+			alert(JSON.stringify(err));
 		});
 	}
 
@@ -148,12 +148,12 @@ $(document).ready(function() {
 			nem.model.transactions.send(common, transactionEntity, endpoint).then(function(res){
 				// If code >= 2, it's an error
 				if (res.code >= 2) {
-					alert(res);
+					alert(JSON.stringify(res));
 				} else {
-					alert(res);
+					alert(JSON.stringify(res));
 				}
 			}, function(err) {
-				console.log(err);
+				alert(JSON.stringify(err));
 			});
 		}
 
@@ -557,14 +557,12 @@ $(document).ready(function() {
 					sendToOwner(closedBountyPool, _msg);
 					_msg = '{"m":"bounty reward for sending the tip","h":"'+_hash+'"}';
 					sendAmount(_sender, _amount, _msg);
-					window.location = "/";
 				});
 				$('#close_btn').on('click',function(){
 
 					var _hash = $(this)[0].attributes['data-hash'].value;
 					var _msg = '{"r":"f","h":"'+_hash+'"}';
 					sendToOwner(closedBountyPool, _msg);
-					window.location = "/";
 				});
 
 			}, function(failure) {
